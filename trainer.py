@@ -5,6 +5,7 @@ import numpy as np
 import logging
 from model import *
 from data import *
+import os
 
 
 class Trainer:
@@ -29,7 +30,8 @@ class Trainer:
         self.negative_label = -1.0
         self.positive_label = 1.0
         self.kwargs = parameters
-        self.storage_path = parameters["dataset"]
+        self.storage_path = parameters['save_dir'] +"/"+  parameters["dataset"]
+        os.makedirs(self.storage_path, exist_ok=True)
 
         # if "norm_flag" not in self.kwargs:
         #     self.kwargs["norm_flag"] = False

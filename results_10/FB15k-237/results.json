@@ -1,0 +1,20 @@
+{
+    "H@1": 0.17702531027069285,
+    "H@3": 0.26683279585654257,
+    "H@10": 0.3834652594547054,
+    "MR": 633.6964477670282,
+    "MRR": 0.24609886561674485,
+    "Number_param": 1891840,
+    "epochs": 10,
+    "batch_size": 512,
+    "label_smoothing": 0.3,
+    "learning_rate": 0.01,
+    "embedding_dim": 64,
+    "dropout": 0.3,
+    "path_dataset_folder": "data/",
+    "dataset": "FB15k-237",
+    "mode": "train",
+    "save_dir": "results_10",
+    "num_entities": 14541,
+    "num_relations": 237
+}

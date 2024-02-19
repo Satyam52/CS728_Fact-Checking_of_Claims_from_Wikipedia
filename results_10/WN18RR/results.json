@@ -1,0 +1,20 @@
+{
+    "H@1": 0.3667836630504148,
+    "H@3": 0.39948947032546267,
+    "H@10": 0.4278876834716018,
+    "MR": 7169.171665603063,
+    "MRR": 0.38899265005587774,
+    "Number_param": 5242368,
+    "epochs": 10,
+    "batch_size": 512,
+    "label_smoothing": 0.3,
+    "learning_rate": 0.01,
+    "embedding_dim": 64,
+    "dropout": 0.3,
+    "path_dataset_folder": "data/",
+    "dataset": "WN18RR",
+    "mode": "train",
+    "save_dir": "results_10",
+    "num_entities": 40943,
+    "num_relations": 11
+}

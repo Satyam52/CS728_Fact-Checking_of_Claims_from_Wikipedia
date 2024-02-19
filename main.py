@@ -20,6 +20,7 @@ if __name__ == "__main__":
     # parser.add_argument("--dataset", type=str, default="WN18RR")
     parser.add_argument("--dataset", type=str, default="FB15k-237")
     parser.add_argument("--mode", type=str, default="eval")
+    parser.add_argument("--save_dir", type=str, required=True)
 
     args = parser.parse_args()
     os.makedirs(args.dataset, exist_ok=True)
