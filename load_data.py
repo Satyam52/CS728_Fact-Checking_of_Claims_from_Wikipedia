@@ -1,43 +1,19 @@
 class Data:
     def __init__(
         self,
-        data_dir=None,
-        train_plus_valid=False,
-        reverse=True,
-        out_of_vocab_flag=False,
+        path=None,
+        out_of_vocab=False,
     ):
-        """
-        ****** reverse=True
-        Double the size of datasets by including reciprocal/inverse relations.
-        We refer Canonical Tensor Decomposition for Knowledge Base Completion for details
-
-        ****** train_plus_valid=True
-        Use the union of training and validation split during training phase.
-
-        ****** out_of_vocab_flag=True
-        Remove all triples from validation and test that contain at least one entity that did not occurred during training.
-
-        """
-        self.info = {
-            "dataset": data_dir,
-            "dataset_augmentation": reverse,
-            "train_plus_valid": train_plus_valid,
-        }
-
-        self.train_data = self.load_data(
-            data_dir, split="train", add_reciprical=reverse
-        )
-        self.valid_data = self.load_data(
-            data_dir, split="valid", add_reciprical=reverse
-        )
-        self.test_data = self.load_data(data_dir, split="test", add_reciprical=False)
-        self.data = self.train_data + self.valid_data + self.test_data
+        self.train = self.load_data(path, split="train")
+        self.validation = self.load_data(path, split="valid")
+        self.test = self.load_data(path, split="test")
+        self.data = self.train + self.validation + self.test
 
         ##Order of entities is important
         self.entities = self.get_entities(self.data)
-        self.train_relations = self.get_relations(self.train_data)
-        self.valid_relations = self.get_relations(self.valid_data)
-        self.test_relations = self.get_relations(self.test_data)
+        self.train_relations = self.get_relations(self.train)
+        self.valid_relations = self.get_relations(self.validation)
+        self.test_relations = self.get_relations(self.test)
 
         self.relations = (
             self.train_relations
@@ -50,53 +26,33 @@ class Data:
             set(self.valid_relations).union(set(self.test_relations))
         )
 
-        if train_plus_valid:
-            self.train_data.extend(self.valid_data)
-            self.valid_data = []
-
         # Remove triples containing out-of-vocabulary entities from validation and test splits
-        if out_of_vocab_flag:
-            print(
-                "Triples containing out-of-vocabulary entities will be removed from validation and training splits."
-            )
-            ent = set(self.get_entities(self.train_data))
-            print(
-                "|G^valid|={0}\t|G^test|={1}".format(
-                    len(self.valid_data), len(self.test_data)
-                )
-            )
-            self.valid_data = [
-                i for i in self.valid_data if i[0] in ent and i[2] in ent
+        if out_of_vocab:
+            ent = set(self.get_entities(self.train))
+            self.validation = [
+                i for i in self.validation if i[0] in ent and i[2] in ent
             ]
-            self.test_data = [i for i in self.test_data if i[0] in ent and i[2] in ent]
-            print(
-                "After removal, |G^valid|={0}\t|G^test|={1}".format(
-                    len(self.valid_data), len(self.test_data)
-                )
-            )
+            self.test = [i for i in self.test if i[0] in ent and i[2] in ent]
 
-    @staticmethod
-    def load_data(data_dir, split, add_reciprical=True):
-        print("Loading data from %s/%s.txt" % (data_dir, split))
+    def load_data(self, path, split):
+        print("Loading data from %s/%s.txt" % (path, split))
+        data = []
         try:
-            with open("%s/%s.txt" % (data_dir, split), "r") as f:
+            with open("%s/%s.txt" % (path, split), "r") as f:
                 data = f.read().strip().split("\n")
                 data = [i.split() for i in data]
-                if add_reciprical:
-                    data += [[i[2], i[1] + "_reverse", i[0]] for i in data]
-        except FileNotFoundError as e:
+        except Exception as e:
             print(e)
-            print("Add empty.")
-            raise NotImplementedError("Split not found...")
-            # data = []
+            raise FileNotFoundError("Split not found...")
         return data
 
-    @staticmethod
-    def get_relations(data):
-        relations = sorted(list(set([d[1] for d in data])))
-        return relations
-
-    @staticmethod
-    def get_entities(data):
-        entities = sorted(list(set([d[0] for d in data] + [d[2] for d in data])))
+    def get_entities(self, data):
+        sub = list(triple[0] for triple in data)
+        obj = list(triple[2] for triple in data)
+        entities = sorted(list(set(sub + obj)))
         return entities
+
+    def get_relations(self, data):
+        rel = list(triple[1] for triple in data)
+        relations = sorted(list(set(rel)))
+        return relations

@@ -1,0 +1,4 @@
+*.pt
+*.csv
+__pycache__/
+params.json
