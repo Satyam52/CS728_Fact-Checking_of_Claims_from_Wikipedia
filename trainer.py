@@ -24,8 +24,8 @@ class Trainer:
         self.cuda = torch.cuda.is_available()
         print("Cuda available: ", self.cuda)
         self.optimizer = None
-        self.entity_idxs = None
-        self.relation_idxs = None
+        self.entity_to_idx = None
+        self.relation_to_idx = None
         self.negative_label = -1.0
         self.positive_label = 1.0
         self.kwargs = parameters
@@ -37,9 +37,9 @@ class Trainer:
     def get_data_idxs(self, data):
         data_idxs = [
             (
-                self.entity_idxs[data[i][0]],
-                self.relation_idxs[data[i][1]],
-                self.entity_idxs[data[i][2]],
+                self.entity_to_idx[data[i][0]],
+                self.relation_to_idx[data[i][1]],
+                self.entity_to_idx[data[i][2]],
             )
             for i in range(len(data))
         ]
@@ -89,7 +89,7 @@ class Trainer:
                 e2_idx = e2_idx.cuda()
 
             all_entities = (
-                torch.arange(0, len(self.entity_idxs)).long().to(e2_idx.device)
+                torch.arange(0, len(self.entity_to_idx)).long().to(e2_idx.device)
             )
             all_entities = all_entities.reshape(
                 len(all_entities),
@@ -99,10 +99,10 @@ class Trainer:
             # (entity, relation) -> use all entities as objects
             obj_predictions = model.predict(
                 e1_idx=e1_idx.repeat(
-                    len(self.entity_idxs),
+                    len(self.entity_to_idx),
                 ),
                 rel_idx=rel_idx.repeat(
-                    len(self.entity_idxs),
+                    len(self.entity_to_idx),
                 ),
                 e2_idx=all_entities,
             )
@@ -129,10 +129,10 @@ class Trainer:
             sub_predictions = model.predict(
                 e1_idx=all_entities,
                 rel_idx=rel_idx.repeat(
-                    len(self.entity_idxs),
+                    len(self.entity_to_idx),
                 ),
                 e2_idx=e2_idx.repeat(
-                    len(self.entity_idxs),
+                    len(self.entity_to_idx),
                 ),
                 obj=False,
             )
@@ -216,9 +216,9 @@ class Trainer:
             for batch in subject_to_relation_batch:
                 e1_idx, r_idx, targets = batch
                 if self.cuda:
-                    targets = targets.cuda()
-                    r_idx = r_idx.cuda()
                     e1_idx = e1_idx.cuda()
+                    r_idx = r_idx.cuda()
+                    targets = targets.cuda()
 
                 # Regularization
                 # https://towardsdatascience.com/what-is-label-smoothing-108debd7ef06
@@ -244,17 +244,17 @@ class Trainer:
         Train and evaluate the model
         """
 
-        self.entity_idxs = {
+        self.entity_to_idx = {
             self.dataset.entities[i]: i for i in range(len(self.dataset.entities))
         }
-        self.relation_idxs = {
+        self.relation_to_idx = {
             self.dataset.relations[i]: i for i in range(len(self.dataset.relations))
         }
 
         self.kwargs.update(
             {
-                "num_entities": len(self.entity_idxs),
-                "num_relations": len(self.relation_idxs),
+                "num_entities": len(self.entity_to_idx),
+                "num_relations": len(self.relation_to_idx),
             }
         )
 
@@ -271,8 +271,8 @@ class Trainer:
                 model.cuda()
 
         results = self.evaluate(model)
-        with open(f"{self.storage_path}/results.json", "w") as file_descriptor:
+        with open(f"{self.storage_path}/results.json", "w") as f:
             num_param = sum([p.numel() for p in model.parameters()])
             results["Number_param"] = num_param
             results.update(self.kwargs)
-            json.dump(results, file_descriptor, indent=4)
+            json.dump(results, f, indent=4)

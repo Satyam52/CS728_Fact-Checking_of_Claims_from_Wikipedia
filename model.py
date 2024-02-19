@@ -1,5 +1,6 @@
 import torch
 from torch.nn.init import xavier_normal_
+from torch import nn
 
 
 class ComplexEx(torch.nn.Module):
@@ -49,7 +50,8 @@ class ComplexEx(torch.nn.Module):
             + torch.mm(e1i * rr, self.Ei.weight.transpose(1, 0))
             - torch.mm(e1i * ri, self.Er.weight.transpose(1, 0))
         )
-        logits = torch.sigmoid(score)
+        logits = torch.nn.functional.softmax(score, dim=1)
+        # logits  = torch.sigmoid(score)
         loss = self.loss(logits, targets)
         return logits, loss
 
@@ -61,7 +63,7 @@ class ComplexEx(torch.nn.Module):
         e2r = self.Er(e2_idx)
         e2i = self.Ei(e2_idx)
 
-        # Using same Regularization
+        # Regularization
         e1r = self.bn_r(e1r)
         e1r = self.dropout(e1r)
         e1i = self.bn_i(e1i)
@@ -77,5 +79,5 @@ class ComplexEx(torch.nn.Module):
         ii_r = (e1i * ri * e2r).sum(dim=1)
 
         score = rr_r + ri_i + ir_i - ii_r
-        logits = torch.sigmoid(score)
+        logits = torch.nn.functional.softmax(score, dim=0)
         return logits

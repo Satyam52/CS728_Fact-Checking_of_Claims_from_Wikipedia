@@ -17,7 +17,7 @@ if __name__ == "__main__":
     parser.add_argument("--embedding_dim", type=int, default=64)
     parser.add_argument("--dropout", type=float, default=0.3)
     parser.add_argument("--path_dataset_folder", type=str, default="data/")
-    parser.add_argument("--dataset", type=str, default="WN18RR")
+    # parser.add_argument("--dataset", type=str, default="WN18RR")
     parser.add_argument("--dataset", type=str, default="FB15k-237")
     parser.add_argument("--mode", type=str, default="eval")
 
