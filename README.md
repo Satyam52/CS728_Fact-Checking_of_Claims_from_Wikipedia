@@ -1,5 +1,11 @@
 # CS728-Fact-Checking of Claims from Wikipedia 
 
+## Instruction to run the code
+1. Run the command `bash main.sh` with appropriate parameters mentioned in the file
+2. The model architecture is implemented in `model.py`
+3. The training, evaluation, and loss function is implemented in `trainer.py`
+
+
 ## Proposed Solution
 
 As already mentioned in the problem statement, we have to build a three-stage pipeline for this task specifically the stages being:
